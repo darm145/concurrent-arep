@@ -20,6 +20,7 @@ public class AppServer {
         inicializar("edu.escuelaing.arep.clasePrueba");
         while (true) {
             Socket clientSocket = null;
+            
             try {
                 System.out.println("Listo para recibir ...");
                 clientSocket = serverSocket.accept();
@@ -30,7 +31,19 @@ public class AppServer {
             }
             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            System.out.println(in.readLine());
+            String request="";
+            String line;
+            try{
+                while(!(line=in.readLine()).equals("") ){
+                    request+=line+"\n";
+                    line=in.readLine();
+                }
+            }catch(NullPointerException e){
+                out.print("HTTP/1.1 404 not Found \r\n");
+
+            }
+            
+            System.out.println(request);
             out.print("HTTP/1.1 200 OK \r\n");
             out.print("Content-Type: text/html \r\n");
             out.print("\r\n");
@@ -42,9 +55,12 @@ public class AppServer {
             "</html>");
             out.close();
             in.close();
+            clientSocket.close();
+            
             
 
         }
+      
 
     }
 
