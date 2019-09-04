@@ -2,6 +2,10 @@ package edu.escuelaing.arep;
 
 import java.net.*;
 import java.util.*;
+
+import javax.imageio.ImageIO;
+
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.reflect.Method;
 
@@ -20,7 +24,7 @@ public class AppServer {
         inicializar("edu.escuelaing.arep.clasePrueba");
         while (true) {
             Socket clientSocket = null;
-            
+
             try {
                 System.out.println("Listo para recibir ...");
                 clientSocket = serverSocket.accept();
@@ -31,50 +35,34 @@ public class AppServer {
             }
             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            String request="";
+            String request = "";
             String line;
-            try{
-                while(!(line=in.readLine()).equals("") ){
-                    request+=line+"\n";
-                    line=in.readLine();
+            try {
+                while (!(line = in.readLine()).equals("")) {
+                    request += line + "\n";
+                    line = in.readLine();
                 }
-            }catch(NullPointerException e){
+            } catch (NullPointerException e) {
                 out.print("HTTP/1.1 404 not Found \r\n");
 
             }
-            
-            System.out.println(request);
-            out.print("HTTP/1.1 200 OK \r\n");
-            out.print("Content-Type: text/html \r\n");
-            out.print("\r\n");
-            out.print("<html>"+
-            "<head/>"+
-            "<body>"+
-            "<h2>  HOLAAAAAAAAAAAAAAAAAAAAAAAA</h2>"+
-            "</body>"+
-            "</html>");
-            out.close();
+            handleRequest(request,out,clientSocket.getOutputStream());
             in.close();
-            clientSocket.close();
-            
-            
 
         }
-      
 
     }
 
     public static void inicializar(String route) {
         try {
             Class<?> c = Class.forName(route);
-            for(Method metodo: c.getMethods()){
-                if(metodo.isAnnotationPresent(Web.class)){
-                    Handler h= new staticMethodHandler(metodo);
-                    System.out.println(c.getCanonicalName()+"       "+c.getName()+"            "+c.getSimpleName() );
-                    listaURLHandler.put("/app/"+c.getName()+"/"+metodo.getAnnotation(Web.class).identifier(),h);
+            for (Method metodo : c.getMethods()) {
+                if (metodo.isAnnotationPresent(Web.class)) {
+                    Handler h = new staticMethodHandler(metodo);
+                    listaURLHandler
+                            .put("/app/" + c.getSimpleName() + "/" + metodo.getAnnotation(Web.class).identifier(), h);
                 }
-                
-                
+
             }
             // Class[] argTypes = new Class[] { String[].class };
             Method execute = c.getDeclaredMethod("ejecutar", null);
@@ -88,5 +76,28 @@ public class AppServer {
             x.printStackTrace();
         }
 
+    }
+
+    private static void handleRequest(String request, PrintWriter out,OutputStream clientOutput) throws IOException{
+        String[] parts = request.trim().split("\n");
+        String route =parts[0].split(" ")[1];
+        System.out.println(route);
+        if(route.endsWith(".jpeg")){
+            String[] elements=route.split("/");
+            String imageName=elements[elements.length-1];
+            out.print("HTTP/1.1 200 OK \r\n");
+            out.print("Content-Type: image/jpeg \r\n");
+            out.print("\r\n");
+            System.out.println(System.getProperty("user.dir") +"/recursos/imagenes/"+ imageName);
+            BufferedImage image = ImageIO.read(new File(System.getProperty("user.dir") +"/recursos/imagenes/"+ imageName));
+            ImageIO.write(image, "jpeg",clientOutput);
+        }
+        else{
+            out.print("HTTP/1.1 200 OK \r\n");
+            out.print("Content-Type: text/html \r\n");
+            out.print("\r\n");
+            out.print("<html>" + "<head/>" + "<body>" + "<h2>  NADAAAAAAAA</h2>" + "</body>" + "</html>");
+        }
+        out.close();
     }
 }
