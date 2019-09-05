@@ -7,12 +7,13 @@ public class staticMethodHandler implements Handler {
     public staticMethodHandler(Method metodo){
         this.metodo=metodo;
     }
-    public void procesar(){
+    public String procesar(){
         try{
             //metodos estaticos sin parametros 
-             metodo.invoke(null,null);
+             return (String) metodo.invoke(null,null);
         }catch(Exception e){
             e.printStackTrace();
+            return null;
         }
        
        

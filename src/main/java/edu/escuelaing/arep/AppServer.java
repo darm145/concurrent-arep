@@ -85,15 +85,34 @@ public class AppServer {
             String route = parts[0].split(" ")[1];
             String[] elements = route.split("/");
             String element = elements[elements.length - 1];
+
             if (element.endsWith(".jpg")) {
                 handleImage(element, clientOutput, out);
             } else if (element.endsWith(".html")) {
-                handleHtml(element, out);
+                handleHtml(element, out, clientOutput);
+            } else if (route.contains("/app")) {
+                if (elements.length == 3) {
+                    String clase = elements[1];
+                    String metodo = elements[2];
+                    String key = "/app/" + clase + "/" + metodo;
+                    if (!listaURLHandler.containsKey(key)) {
+                        // procesar retorna
+                        
+                        inicializar("edu.escuelaing.arep." + clase);
+                        
+                        
+                    }
+                    String result = listaURLHandler.get(key).procesar();
+                    out.print("HTTP/1.1 200 OK \r\n");
+                    out.print("Content-Type: text/html \r\n");
+                    out.print("\r\n");
+                    out.print(result);
+
+                } else {
+                    Error404(clientOutput);
+                }
             } else {
-                out.print("HTTP/1.1 200 OK \r\n");
-                out.print("Content-Type: text/html \r\n");
-                out.print("\r\n");
-                out.print("<html>" + "<head/>" + "<body>" + "<h2>  NADAAAAAAAA</h2>" + "</body>" + "</html>");
+                Error404(clientOutput);
             }
             out.close();
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -102,7 +121,7 @@ public class AppServer {
 
     }
 
-    private static void handleHtml(String element, PrintWriter out) throws IOException {
+    private static void handleHtml(String element, PrintWriter out, OutputStream clientOutput) throws IOException {
         try {
             BufferedReader br = new BufferedReader(
                     new FileReader(System.getProperty("user.dir") + "/recursos/html/" + element));
@@ -115,7 +134,7 @@ public class AppServer {
             }
             br.close();
         } catch (FileNotFoundException e) {
-            //Error404();
+            Error404(clientOutput);
         }
 
     }
@@ -150,9 +169,9 @@ public class AppServer {
         // writeimg.writeBytes("Content-Length: " + ArrBytes.toByteArray().length +
         // "\r\n");
         writeimg.writeBytes("\r\n");
-        writeimg.writeBytes("<html>" + "<head/>" + "<body>" + "<h2>  ERROR, ARCHIVO NO ENCONTRADO</h2>" + "<img src= \" "
-                + System.getProperty("user.dir") + "\\recursos\\imagenes\\404error.jpg\">" + "</body>" + "</html>");
-        
+        writeimg.writeBytes("<html>" + "<head/>" + "<body>" + "<h2>  ERROR, ARCHIVO NO ENCONTRADO</h2>"
+                + "<img src= \" " + System.getProperty("user.dir") + "\\recursos\\imagenes\\404error.jpg\">" + "</body>"
+                + "</html>");
 
     }
 
