@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - AppServer",
+            "request": "launch",
+            "mainClass": "edu.escuelaing.arep.AppServer",
+            "projectName": "framekwork"
+        }
+    ]
+}

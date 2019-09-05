@@ -95,8 +95,10 @@ public class AppServer {
         }
 
     }
-    private static void handleMethod(String[] elements,PrintWriter out,OutputStream clientOutput) throws IOException{
+
+    private static void handleMethod(String[] elements, PrintWriter out, OutputStream clientOutput) throws IOException {
         if (elements.length == 4) {
+
             String clase = elements[2];
             String metodo = elements[3];
             String key = "/app/" + clase + "/" + metodo;
@@ -109,17 +111,35 @@ public class AppServer {
                     return;
                 }
             }
-            try{
-                String result;
-                result=listaURLHandler.get(key).procesar();
-                out.print("HTTP/1.1 200 OK \r\n");
-                out.print("Content-Type: text/html \r\n");
-                out.print("\r\n");
-                out.print(result);
-            }catch(Exception e){
+            try {
+                if (!elements[3].contains("?")) {
+
+                    String result;
+                    result = listaURLHandler.get(key).procesar();
+                    out.print("HTTP/1.1 200 OK \r\n");
+                    out.print("Content-Type: text/html \r\n");
+                    out.print("\r\n");
+                    out.print(result);
+                } else {
+                    key=key.split("\\?")[0];
+                    String paramString = elements[3].split("\\?")[1];
+                    String[] paramValues = paramString.split("&");
+                    Object[] params = new Object[paramValues.length];
+                    for (int i = 0; i < paramValues.length; i++) {
+                        params[i] = paramValues[i].split("=")[1];
+                    }
+                    System.out.println(key);
+                    String result=listaURLHandler.get(key).procesarConParams(params);
+                    out.print("HTTP/1.1 200 OK \r\n");
+                    out.print("Content-Type: text/html \r\n");
+                    out.print("\r\n");
+                    out.print(result);
+
+                }
+
+            } catch (Exception e) {
                 Error404(clientOutput);
             }
-           
 
         } else {
             Error404(clientOutput);
