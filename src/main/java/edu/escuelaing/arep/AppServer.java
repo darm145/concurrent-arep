@@ -109,10 +109,17 @@ public class AppServer {
                     return;
                 }
             }
-            out.print("HTTP/1.1 200 OK \r\n");
-            out.print("Content-Type: text/html \r\n");
-            out.print("\r\n");
-            out.print(listaURLHandler.get(key).procesar());
+            try{
+                String result;
+                result=listaURLHandler.get(key).procesar();
+                out.print("HTTP/1.1 200 OK \r\n");
+                out.print("Content-Type: text/html \r\n");
+                out.print("\r\n");
+                out.print(result);
+            }catch(Exception e){
+                Error404(clientOutput);
+            }
+           
 
         } else {
             Error404(clientOutput);
