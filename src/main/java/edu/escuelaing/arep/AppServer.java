@@ -40,16 +40,18 @@ public class AppServer {
             try {
                 while (!(line = in.readLine()).equals("")) {
                     request += line + "\n";
-                    line = in.readLine();
+                    
                 }
             } catch (NullPointerException e) {
                 out.print("HTTP/1.1 404 not Found \r\n");
 
             }
+            System.out.println(request);
             handleRequest(request,out,clientSocket.getOutputStream());
             in.close();
 
         }
+        
 
     }
 
@@ -79,25 +81,34 @@ public class AppServer {
     }
 
     private static void handleRequest(String request, PrintWriter out,OutputStream clientOutput) throws IOException{
-        String[] parts = request.trim().split("\n");
-        String route =parts[0].split(" ")[1];
-        System.out.println(route);
-        if(route.endsWith(".jpeg")){
+        try{
+            String[] parts = request.trim().split("\n");
+            String route =parts[0].split(" ")[1];
             String[] elements=route.split("/");
-            String imageName=elements[elements.length-1];
-            out.print("HTTP/1.1 200 OK \r\n");
-            out.print("Content-Type: image/jpeg \r\n");
-            out.print("\r\n");
-            System.out.println(System.getProperty("user.dir") +"/recursos/imagenes/"+ imageName);
-            BufferedImage image = ImageIO.read(new File(System.getProperty("user.dir") +"/recursos/imagenes/"+ imageName));
-            ImageIO.write(image, "jpeg",clientOutput);
+            String element=elements[elements.length-1];
+            if(element.endsWith(".jpg")){
+                BufferedImage image = ImageIO.read(new File(System.getProperty("user.dir") +"/recursos/imagenes/"+ element));
+                ByteArrayOutputStream ArrBytes = new ByteArrayOutputStream();
+                DataOutputStream writeimg=new DataOutputStream(clientOutput);
+                ImageIO.write(image, "jpg",ArrBytes);
+                writeimg.writeBytes("HTTP/1.1 200 OK \r\n");
+                writeimg.writeBytes("Content-Type: image/jpg \r\n");
+                writeimg.writeBytes("Content-Length: "+ArrBytes.toByteArray().length+"\r\n");
+                writeimg.writeBytes("\r\n");
+                writeimg.write(ArrBytes.toByteArray());
+                System.out.println(System.getProperty("user.dir") +"\\recursos\\imagenes\\"+ element);
+            }
+            else{
+                out.print("HTTP/1.1 200 OK \r\n");
+                out.print("Content-Type: text/html \r\n");
+                out.print("\r\n");
+                out.print("<html>" + "<head/>" + "<body>" + "<h2>  NADAAAAAAAA</h2>" + "</body>" + "</html>");
+            }
+            out.close();
+        }catch(ArrayIndexOutOfBoundsException e){
+            System.out.println("error en consulta");
         }
-        else{
-            out.print("HTTP/1.1 200 OK \r\n");
-            out.print("Content-Type: text/html \r\n");
-            out.print("\r\n");
-            out.print("<html>" + "<head/>" + "<body>" + "<h2>  NADAAAAAAAA</h2>" + "</body>" + "</html>");
-        }
-        out.close();
+        
+        
     }
 }
