@@ -12,7 +12,7 @@ import java.lang.reflect.Method;
 public class AppServer {
     private static HashMap<String, Handler> listaURLHandler = new HashMap<String, Handler>();
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
 
         ServerSocket serverSocket = null;
         try {
@@ -21,7 +21,7 @@ public class AppServer {
             System.err.println("Could not listen on port");
             System.exit(1);
         }
-        inicializar("edu.escuelaing.arep.clasePrueba");
+
         while (true) {
             Socket clientSocket = null;
 
@@ -54,28 +54,22 @@ public class AppServer {
 
     }
 
-    public static void inicializar(String route) {
-        try {
-            Class<?> c = Class.forName(route);
-            for (Method metodo : c.getMethods()) {
-                if (metodo.isAnnotationPresent(Web.class)) {
-                    System.out.println("entra2");
-                    Handler h = new staticMethodHandler(metodo);
-                    listaURLHandler.put("/app/" + c.getSimpleName() + "/" + metodo.getAnnotation(Web.class).value(), h);
-                }
+    public static void inicializar(String route) throws Exception {
 
+        Class<?> c = Class.forName(route);
+        for (Method metodo : c.getMethods()) {
+            if (metodo.isAnnotationPresent(Web.class)) {
+                System.out.println("entra2");
+                Handler h = new staticMethodHandler(metodo);
+                listaURLHandler.put("/app/" + c.getSimpleName() + "/" + metodo.getAnnotation(Web.class).value(), h);
             }
-            // Class[] argTypes = new Class[] { String[].class };
-            Method execute = c.getDeclaredMethod("ejecutar", null);
-
-            System.out.format("invoking %s.ejecutar()%n", c.getName());
-            execute.invoke(null, null);
 
         }
+        // Class[] argTypes = new Class[] { String[].class };
+        Method execute = c.getDeclaredMethod("ejecutar", null);
 
-        catch (Exception x) {
-            x.printStackTrace();
-        }
+        System.out.format("invoking %s.ejecutar()%n", c.getName());
+        execute.invoke(null, null);
 
     }
 
@@ -91,26 +85,7 @@ public class AppServer {
             } else if (element.endsWith(".html")) {
                 handleHtml(element, out, clientOutput);
             } else if (route.contains("/app")) {
-                if (elements.length == 3) {
-                    String clase = elements[1];
-                    String metodo = elements[2];
-                    String key = "/app/" + clase + "/" + metodo;
-                    if (!listaURLHandler.containsKey(key)) {
-                        // procesar retorna
-                        
-                        inicializar("edu.escuelaing.arep." + clase);
-                        
-                        
-                    }
-                    String result = listaURLHandler.get(key).procesar();
-                    out.print("HTTP/1.1 200 OK \r\n");
-                    out.print("Content-Type: text/html \r\n");
-                    out.print("\r\n");
-                    out.print(result);
-
-                } else {
-                    Error404(clientOutput);
-                }
+                handleMethod(elements, out, clientOutput);
             } else {
                 Error404(clientOutput);
             }
@@ -119,6 +94,29 @@ public class AppServer {
             System.out.println("error en consulta");
         }
 
+    }
+    private static void handleMethod(String[] elements,PrintWriter out,OutputStream clientOutput) throws IOException{
+        if (elements.length == 4) {
+            String clase = elements[2];
+            String metodo = elements[3];
+            String key = "/app/" + clase + "/" + metodo;
+            if (!listaURLHandler.containsKey(key)) {
+                try {
+                    inicializar("edu.escuelaing.arep." + clase);
+
+                } catch (Exception e) {
+                    Error404(clientOutput);
+                    return;
+                }
+            }
+            out.print("HTTP/1.1 200 OK \r\n");
+            out.print("Content-Type: text/html \r\n");
+            out.print("\r\n");
+            out.print(listaURLHandler.get(key).procesar());
+
+        } else {
+            Error404(clientOutput);
+        }
     }
 
     private static void handleHtml(String element, PrintWriter out, OutputStream clientOutput) throws IOException {
