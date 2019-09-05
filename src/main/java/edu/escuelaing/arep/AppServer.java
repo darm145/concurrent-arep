@@ -60,9 +60,10 @@ public class AppServer {
             Class<?> c = Class.forName(route);
             for (Method metodo : c.getMethods()) {
                 if (metodo.isAnnotationPresent(Web.class)) {
+                    System.out.println("entra2");
                     Handler h = new staticMethodHandler(metodo);
                     listaURLHandler
-                            .put("/app/" + c.getSimpleName() + "/" + metodo.getAnnotation(Web.class).identifier(), h);
+                            .put("/app/" + c.getSimpleName() + "/" + metodo.getAnnotation(Web.class).value(), h);
                 }
 
             }
