@@ -13,7 +13,8 @@ public class POJO {
     @Web("ejecutarClasePrueba")
     public static String ejecutar() {
         System.out.println("ejecuto el metodo desde el initializer");
-        return "<html>" + "<head/>" + "<body>" + "<h2>  Metodo ejecutado desde web</h2>" + "</body>" + "</html>";
+        Double a= new Double(2);
+        return a.toString();
     }
 
     /**
@@ -37,4 +38,5 @@ public class POJO {
         return "<html>" + "<head/>" + "<body>" + "<h2> La suma es: "
                 + Integer.toString(Integer.parseInt(n1) + Integer.parseInt(n2)) + "</h2>" + "</body>" + "</html>";
     }
+
 }

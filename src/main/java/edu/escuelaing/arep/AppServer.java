@@ -75,10 +75,7 @@ public class AppServer {
 
         }
         // Class[] argTypes = new Class[] { String[].class };
-        Method execute = c.getDeclaredMethod("ejecutar", null);
-
-        System.out.format("invoking %s.ejecutar()%n", c.getName());
-        execute.invoke(null, null);
+       
 
     } 
     /**
@@ -121,10 +118,12 @@ public class AppServer {
             String clase = elements[2];
             String metodo = elements[3];
             String key = "/app/" + clase + "/" + metodo;
+            
             if (!listaURLHandler.containsKey(key)) {
                 try {
+                   
                     inicializar("edu.escuelaing.arep." + clase);
-
+                    
                 } catch (Exception e) {
                     Error404(clientOutput);
                     return;
@@ -132,7 +131,7 @@ public class AppServer {
             }
             try {
                 if (!elements[3].contains("?")) {
-
+                    System.out.println("asd");
                     String result;
                     result = listaURLHandler.get(key).procesar();
                     out.print("HTTP/1.1 200 OK \r\n");
