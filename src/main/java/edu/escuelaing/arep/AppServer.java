@@ -9,9 +9,14 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.reflect.Method;
 
+/**
+ *
+ * @author David Ramirez
+ */
 public class AppServer {
     private static HashMap<String, Handler> listaURLHandler = new HashMap<String, Handler>();
 
+    
     public static void main(String[] args) throws Exception {
 
         ServerSocket serverSocket = null;
@@ -54,6 +59,10 @@ public class AppServer {
 
     }
 
+    /**
+     *Metodo que permite guardar los metodos web de un POJO para que sean accesibles mas facilmente 
+     * @param route la direccion del POJO 
+     */
     public static void inicializar(String route) throws Exception {
 
         Class<?> c = Class.forName(route);
@@ -71,8 +80,13 @@ public class AppServer {
         System.out.format("invoking %s.ejecutar()%n", c.getName());
         execute.invoke(null, null);
 
-    }
-
+    } 
+    /**
+     *Metodo que Desglosa una solicitud hecha por el browser y llama las funciones segun sea el caso
+     * @param request la solicitud hecha por el browser 
+     * @param out un writer que permite escribir archivos sencillos como texto al ususario
+     * @param clientOutput stream que permite escribir archivos complejos como imagenes al usuario
+     */
     private static void handleRequest(String request, PrintWriter out, OutputStream clientOutput) throws IOException {
         try {
             String[] parts = request.trim().split("\n");
@@ -95,7 +109,12 @@ public class AppServer {
         }
 
     }
-
+    /**
+     *funcion para manejar metodos recibidos en la URL bajo la secuencia/app/{clase}/{metodo}
+     * @param elements lista que contiene los elementos de la URL separados por "/"
+     * @param out un writer que permite escribir archivos sencillos como texto al ususario
+     * @param clientOutput stream que permite escribir archivos complejos como imagenes al usuario
+     */
     private static void handleMethod(String[] elements, PrintWriter out, OutputStream clientOutput) throws IOException {
         if (elements.length == 4) {
 
@@ -145,6 +164,12 @@ public class AppServer {
             Error404(clientOutput);
         }
     }
+    /**
+     *funcion para manejar los archivos HTML recibidos en la URL
+     * @param element nombre del archivo html a buscar
+     * @param out un writer que permite escribir archivos sencillos como texto al ususario
+     * @param clientOutput stream que permite escribir archivos complejos como imagenes al usuario
+     */
 
     private static void handleHtml(String element, PrintWriter out, OutputStream clientOutput) throws IOException {
         try {
@@ -163,6 +188,12 @@ public class AppServer {
         }
 
     }
+    /**
+     *funcion para manejar imagenes recibidos en la url
+     * @param element nombre de la imagen a buscar
+     * @param out un writer que permite escribir archivos sencillos como texto al ususario
+     * @param clientOutput stream que permite escribir archivos complejos como imagenes al usuario
+     */
 
     private static void handleImage(String element, OutputStream clientOutput, PrintWriter out) throws IOException {
         try {
@@ -182,6 +213,10 @@ public class AppServer {
         }
 
     }
+    /**
+     *funcion para mostrar un Error 404 en caso de que algun fichero o metodo no sea encontrado
+     * @param clientOutput stream que permite escribir archivos complejos como imagenes al usuario
+     */
 
     private static void Error404(OutputStream clientOutput) throws IOException {
         BufferedImage image = ImageIO
@@ -199,7 +234,9 @@ public class AppServer {
                 + "</html>");
 
     }
-
+    /**
+     *funcion para obtener un puerto por el cual el servidor va a trabajar
+     */
     static int getPort() {
         if (System.getenv("PORT") != null) {
             return Integer.parseInt(System.getenv("PORT"));
