@@ -13,48 +13,33 @@ import java.lang.reflect.Method;
  *
  * @author David Ramirez
  */
-public class AppServer {
+public class SocketHandler implements Runnable {
     private static HashMap<String, Handler> listaURLHandler = new HashMap<String, Handler>();
+    Socket clientSocket;
 
-    public static void main(String[] args) throws Exception {
+    public SocketHandler(Socket clientSocket) {
+        this.clientSocket = clientSocket;
+    }
 
-        ServerSocket serverSocket = null;
+    public void receiveRequest() throws IOException {
+        System.out.println("hilooooooooooooooooooooOO"+Thread.currentThread().getId());
+
+        PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+        BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        String request = "";
+        String line;
         try {
-            serverSocket = new ServerSocket(getPort());
-        } catch (IOException e) {
-            System.err.println("Could not listen on port");
-            System.exit(1);
-        }
-
-        while (true) {
-            Socket clientSocket = null;
-
-            try {
-                System.out.println("Listo para recibir ...");
-                clientSocket = serverSocket.accept();
-
-            } catch (IOException e) {
-                System.err.println("Accept failed.");
-                System.exit(1);
-            }
-            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            String request = "";
-            String line;
-            try {
-                while (!(line = in.readLine()).equals("")) {
-                    request += line + "\n";
-
-                }
-            } catch (NullPointerException e) {
-                out.print("HTTP/1.1 404 not Found \r\n");
+            while (!(line = in.readLine()).equals("")) {
+                request += line + "\n";
 
             }
-            System.out.println(request);
-            handleRequest(request, out, clientSocket.getOutputStream());
-            in.close();
+        } catch (NullPointerException e) {
+            out.print("HTTP/1.1 404 not Found \r\n");
 
         }
+        System.out.println(request);
+        handleRequest(request, out, clientSocket.getOutputStream());
+        in.close();
 
     }
 
@@ -94,7 +79,7 @@ public class AppServer {
             String[] parts = request.trim().split("\n");
             String route = parts[0].split(" ")[1];
             String[] elements = route.split("/");
-            
+
             if (elements.length == 0) {
                 handleHtml("index.html", out, clientOutput);
             } else {
@@ -264,15 +249,13 @@ public class AppServer {
 
     }
 
-    /**
-     * funcion para obtener un puerto por el cual el servidor va a trabajar
-     */
-    static int getPort() {
-        if (System.getenv("PORT") != null) {
-            return Integer.parseInt(System.getenv("PORT"));
+    @Override
+    public void run() {
+        try {
+            receiveRequest();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        return 4567;
-        // returns default port if heroku-port isn't set (i.e. on localhost)
 
     }
 }
