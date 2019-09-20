@@ -14,9 +14,10 @@ import edu.escuelaing.arep.SocketHandler;
 
 public class Balancer {
 
-    private static ExecutorService pool = Executors.newCachedThreadPool();
+    private static ExecutorService pool = Executors.newFixedThreadPool(10);
 
     public static void main(String[] args) throws Exception {
+        
 
         ServerSocket serverSocket = null;
         try {

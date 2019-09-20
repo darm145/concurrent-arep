@@ -37,7 +37,7 @@ public class SocketHandler implements Runnable {
             out.print("HTTP/1.1 404 not Found \r\n");
 
         }
-        System.out.println(request);
+       
         handleRequest(request, out, clientSocket.getOutputStream());
         in.close();
 
@@ -54,7 +54,7 @@ public class SocketHandler implements Runnable {
         Class<?> c = Class.forName(route);
         for (Method metodo : c.getMethods()) {
             if (metodo.isAnnotationPresent(Web.class)) {
-                System.out.println("entra2");
+              
                 Handler h = new staticMethodHandler(metodo);
                 listaURLHandler.put("/app/" + c.getSimpleName() + "/" + metodo.getAnnotation(Web.class).value(), h);
             }
@@ -134,7 +134,7 @@ public class SocketHandler implements Runnable {
             }
             try {
                 if (!elements[3].contains("?")) {
-                    System.out.println("asd");
+                   
                     String result;
                     result = listaURLHandler.get(key).procesar();
                     out.print("HTTP/1.1 200 OK \r\n");
@@ -149,7 +149,7 @@ public class SocketHandler implements Runnable {
                     for (int i = 0; i < paramValues.length; i++) {
                         params[i] = paramValues[i].split("=")[1];
                     }
-                    System.out.println(key);
+                   
                     String result = listaURLHandler.get(key).procesarConParams(params);
                     out.print("HTTP/1.1 200 OK \r\n");
                     out.print("Content-Type: text/html \r\n");
@@ -217,7 +217,7 @@ public class SocketHandler implements Runnable {
             writeimg.writeBytes("Content-Length: " + ArrBytes.toByteArray().length + "\r\n");
             writeimg.writeBytes("\r\n");
             writeimg.write(ArrBytes.toByteArray());
-            System.out.println(System.getProperty("user.dir") + "\\recursos\\imagenes\\" + element);
+       
         } catch (IOException e) {
             Error404(clientOutput);
         }
