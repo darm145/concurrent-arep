@@ -1,1 +1,1 @@
-web: java -cp target/classes:target/dependency/* edu.escuelaing.arep.AppServer
+web: java -cp target/classes:target/dependency/* edu.escuelaing.arep.Balancer
